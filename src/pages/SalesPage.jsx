@@ -21,7 +21,7 @@ const SalesPage = () => {
 
 			<main className='max-w-7xl mx-auto py-6 px-4 lg:px-8'>
 				{/* SALES STATS */}
-				<motion.div
+				{/* <motion.div
 					className='grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8'
 					initial={{ opacity: 0, y: 20 }}
 					animate={{ opacity: 1, y: 0 }}
@@ -41,14 +41,14 @@ const SalesPage = () => {
 						color='#F59E0B'
 					/>
 					<StatCard name='Sales Growth' icon={CreditCard} value={salesStats.salesGrowth} color='#EF4444' />
-				</motion.div>
+				</motion.div> */}
 
 				<SalesOverviewChart />
 
-				<div className='grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8'>
+				{/* <div className='grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8'>
 					<SalesByCategoryChart />
 					<DailySalesTrend />
-				</div>
+				</div> */}
 			</main>
 		</div>
 	);

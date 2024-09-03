@@ -7,51 +7,49 @@ const SalesOverviewChart = () => {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [selectedTimeRange, setSelectedTimeRange] = useState('365'); // Default to 365 days
+    const [selectedCompany, setSelectedCompany] = useState('MSFT'); // Default to Microsoft
+    const [companyName, setCompanyName] = useState('Microsoft');
+    const apiKey = 'AT1SJHA2FJU0MKO2';
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await axios.get('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart', {
+                const response = await axios.get('https://www.alphavantage.co/query', {
                     params: {
-                        vs_currency: 'usd',
-                        days: selectedTimeRange, // Use the selected time range
+                        function: 'TIME_SERIES_DAILY',
+                        symbol: selectedCompany,
+                        apikey: apiKey
                     }
                 });
 
-                const prices = response.data.prices;
-                const monthlyData = prices.reduce((acc, [timestamp, price]) => {
-                    const date = new Date(timestamp);
-                    const yearMonth = `${date.getFullYear()}-${date.getMonth() + 1}`;
+                const stockData = response.data['Time Series (Daily)'];
+                
+                if (!stockData) {
+                    throw new Error('No data available for the selected company.');
+                }
 
-                    if (!acc[yearMonth]) {
-                        acc[yearMonth] = { month: new Date(date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }), total: 0, count: 0 };
-                    }
-
-                    acc[yearMonth].total += price;
-                    acc[yearMonth].count += 1;
-
-                    return acc;
-                }, {});
-
-                const formattedData = Object.values(monthlyData).map(({ month, total, count }) => ({
-                    month,
-                    price: (total / count).toFixed(2) // Average sales price
-                }));
+                const formattedData = Object.entries(stockData).map(([date, value]) => ({
+                    date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                    price: parseFloat(value['4. close']).toFixed(2)
+                })).reverse(); // Reverse to show the most recent data last
 
                 setData(formattedData);
                 setLoading(false);
             } catch (err) {
-                setError(err);
+                setError(err.message || 'An error occurred while fetching data.');
                 setLoading(false);
             }
         };
 
         fetchData();
-    }, [selectedTimeRange]);
+    }, [selectedCompany]);
+
+    useEffect(() => {
+        setCompanyName(selectedCompany === 'MSFT' ? 'Microsoft' : 'Google');
+    }, [selectedCompany]);
 
     if (loading) return <div>Loading...</div>;
-    if (error) return <div>Error: {error.message}</div>;
+    if (error) return <div>Error: {error}</div>;
 
     return (
         <motion.div
@@ -61,23 +59,21 @@ const SalesOverviewChart = () => {
             transition={{ delay: 0.2 }}
         >
             <div className='flex items-center justify-between mb-6'>
-                <h2 className='text-xl font-semibold text-gray-100'>Sales Overview</h2>
+                <h2 className='text-xl font-semibold text-gray-100'>{companyName} Stock Price Overview</h2>
                 <select
                     className='bg-gray-700 text-white rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500'
-                    value={selectedTimeRange}
-                    onChange={(e) => setSelectedTimeRange(e.target.value)}
+                    value={selectedCompany}
+                    onChange={(e) => setSelectedCompany(e.target.value)}
                 >
-                    <option value="7">This Week</option>
-                    <option value="30">This Month</option>
-                    <option value="90">This Quarter</option>
-                    <option value="365">This Year</option>
+                    <option value="MSFT">Microsoft</option>
+                    <option value="GOOGL">Google</option>
                 </select>
             </div>
             <div className='w-full h-80'>
                 <ResponsiveContainer>
                     <AreaChart data={data}>
                         <CartesianGrid strokeDasharray='3 3' stroke='#374151' />
-                        <XAxis dataKey='month' stroke='#9CA3AF' />
+                        <XAxis dataKey='date' stroke='#9CA3AF' />
                         <YAxis stroke='#9CA3AF' />
                         <Tooltip
                             contentStyle={{ backgroundColor: "rgba(31, 41, 55, 0.8)", borderColor: "#4B5563" }}
