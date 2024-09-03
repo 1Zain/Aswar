@@ -1,19 +1,15 @@
-import { motion } from "framer-motion";
-import { Edit, Search, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import Pusher from "pusher-js";
 import axios from "axios";
-import io from "socket.io-client";
+import { Search } from "lucide-react";
 
-// Socket.io server URL
-const SOCKET_SERVER_URL = "http://localhost:5173"; // Replace with your WebSocket server URL
-
-const ProductsTable = () => {
+const CryptocurrencyTable = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [allData, setAllData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
 
   useEffect(() => {
-    // Fetch initial data
     const fetchData = async () => {
       try {
         const response = await axios.get("https://api.coingecko.com/api/v3/coins/markets", {
@@ -33,12 +29,17 @@ const ProductsTable = () => {
 
     fetchData();
 
-    // Set up WebSocket connection
-    const socket = io(SOCKET_SERVER_URL);
+// the Pusher key and Pusher cluster is provided when you create an application in the Pusher Dashboard.
+// Pusher is another option for implementing real-time communication in your applications,
+// and it can be considered a third-party service.
+// Pusher uses WebSockets (among other protocols) to deliver real-time updates.
 
-    // Listen for real-time updates
-    socket.on("crypto-update", (data) => {
-      // Assuming 'data' contains updated cryptocurrency data
+    const pusher = new Pusher('YOUR_PUSHER_KEY', {
+      cluster: 'YOUR_PUSHER_CLUSTER'
+    });
+    const channel = pusher.subscribe('crypto-updates');
+
+    channel.bind('update', (data) => {
       setAllData((prevData) => {
         const updatedData = prevData.map((crypto) =>
           data.find((item) => item.id === crypto.id) || crypto
@@ -48,9 +49,9 @@ const ProductsTable = () => {
       });
     });
 
-    // Clean up the WebSocket connection on component unmount
     return () => {
-      socket.disconnect();
+      pusher.unsubscribe('crypto-updates');
+      pusher.disconnect();
     };
   }, []);
 
@@ -128,7 +129,6 @@ const ProductsTable = () => {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                   {crypto.price_change_percentage_24h.toFixed(2)}%
                 </td>
-              
               </motion.tr>
             ))}
           </tbody>
@@ -138,4 +138,4 @@ const ProductsTable = () => {
   );
 };
 
-export default ProductsTable;
+export default CryptocurrencyTable;

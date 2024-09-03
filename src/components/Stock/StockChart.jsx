@@ -2,12 +2,17 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import Pusher from 'pusher-js';
 
-const SalesOverviewChart = () => {
+
+const PUSHER_KEY = 'YOUR_PUSHER_KEY';
+const PUSHER_CLUSTER = 'YOUR_PUSHER_CLUSTER';
+
+const StockChart = () => {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [selectedCompany, setSelectedCompany] = useState('MSFT'); // Default to Microsoft
+    const [selectedCompany, setSelectedCompany] = useState('MSFT'); 
     const [companyName, setCompanyName] = useState('Microsoft');
     const apiKey = 'AT1SJHA2FJU0MKO2';
 
@@ -31,7 +36,7 @@ const SalesOverviewChart = () => {
                 const formattedData = Object.entries(stockData).map(([date, value]) => ({
                     date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
                     price: parseFloat(value['4. close']).toFixed(2)
-                })).reverse(); // Reverse to show the most recent data last
+                })).reverse();
 
                 setData(formattedData);
                 setLoading(false);
@@ -42,6 +47,36 @@ const SalesOverviewChart = () => {
         };
 
         fetchData();
+
+        
+// the Pusher key and Pusher cluster is provided when you create an application in the Pusher Dashboard.
+// Pusher is another option for implementing real-time communication in your applications,
+// and it can be considered a third-party service.
+// Pusher uses WebSockets (among other protocols) to deliver real-time updates.
+
+
+        const pusher = new Pusher(PUSHER_KEY, {
+            cluster: PUSHER_CLUSTER
+        });
+        const channel = pusher.subscribe('stock-updates');
+
+        channel.bind('update', (data) => {
+            setData(prevData => {
+                
+                const updatedData = prevData.map(item => {
+                    if (data.date === item.date) {
+                        return { ...item, price: data.price };
+                    }
+                    return item;
+                });
+                return updatedData;
+            });
+        });
+
+        return () => {
+            pusher.unsubscribe('stock-updates');
+            pusher.disconnect();
+        };
     }, [selectedCompany]);
 
     useEffect(() => {
@@ -87,4 +122,4 @@ const SalesOverviewChart = () => {
     );
 };
 
-export default SalesOverviewChart;
+export default StockChart;

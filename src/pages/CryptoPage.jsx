@@ -1,19 +1,20 @@
 import Header from "../components/common/Header";
+import CryptoTable from "../components/Cryptocurrency/CryptocurrencyTable";
 
-const OverviewPage = () => {
+const Cryptocurrency = () => {
 	return (
 		<div className='flex-1 overflow-auto relative z-10'>
-			<Header title='Overview' />
+			<Header title='Cryptocurrency' />
 
 			<main className='max-w-7xl mx-auto py-6 px-4 lg:px-8'>
 				
 
-				<div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
+				<CryptoTable />
+
 				
-					
-				</div>
+				
 			</main>
 		</div>
 	);
 };
-export default OverviewPage;
+export default Cryptocurrency;
