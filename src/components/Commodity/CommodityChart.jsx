@@ -4,7 +4,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsi
 import axios from "axios";
 import Pusher from "pusher-js";
 
-// Replace these with your actual Pusher credentials
+
 const PUSHER_KEY = "YOUR_PUSHER_KEY";
 const PUSHER_CLUSTER = "YOUR_PUSHER_CLUSTER";
 
@@ -13,11 +13,11 @@ const CommodityChart = () => {
     const [commodityData, setCommodityData] = useState([]);
 
     useEffect(() => {
-        // Fetch initial data
+       
         const fetchCommodityData = async () => {
             try {
                 const apiKey = "7VPXE03PR76QEAY6"; 
-                const symbols = ["GOLD", "SILVER", "OIL"]; 
+                const symbols = ["GOLD", "OIL"]; 
                 const fetchData = async (symbol) => {
                     const response = await axios.get(
                         `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=${symbol}&apikey=${apiKey}`
@@ -93,16 +93,7 @@ const CommodityChart = () => {
         >
             <div className='flex justify-between items-center mb-6'>
                 <h2 className='text-xl font-semibold text-gray-100'>Commodity Prices</h2>
-                <select
-                    className='bg-gray-700 text-white rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500'
-                    value={selectedTimeRange}
-                    onChange={(e) => setSelectedTimeRange(e.target.value)}
-                >
-                    <option>This Week</option>
-                    <option>This Month</option>
-                    <option>This Quarter</option>
-                    <option>This Year</option>
-                </select>
+                
             </div>
 
             <div style={{ width: "100%", height: 400 }}>
@@ -117,7 +108,6 @@ const CommodityChart = () => {
                         />
                         <Legend />
                         <Area type='monotone' dataKey='GOLD' stroke='#FFD700' fill='#FFD700' fillOpacity={0.3} name="Gold" />
-                        <Area type='monotone' dataKey='SILVER' stroke='#C0C0C0' fill='#C0C0C0' fillOpacity={0.3} name="Silver" />
                         <Area type='monotone' dataKey='OIL' stroke='#000000' fill='#000000' fillOpacity={0.3} name="Oil" />
                     </AreaChart>
                 </ResponsiveContainer>
